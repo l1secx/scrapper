@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Language Scraper - Web GUI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .languages {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .language-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .language-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .language-option {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .language-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .language-option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .language-option .emoji {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .language-option .name {
+            font-weight: bold;
+        }
+
+        .language-option .desc {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #f8f9ff;
+            border-radius: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .status-running {
+            background: #667eea;
+            color: white;
+        }
+
+        .status-completed {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-failed {
+            background: #dc3545;
+            color: white;
+        }
+
+        .task-list {
+            margin-top: 20px;
+        }
+
+        .task-item {
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .task-url {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .task-language {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .task-log {
+            background: #333;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.85em;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .file-list {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+
+        .file-name {
+            flex: 1;
+            color: #333;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 0.9em;
+            margin-right: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Multi-Language Scraper</h1>
+            <p>Python • Rust • Go - All Working Together</p>
+        </div>
+
+        <div class="languages">
+            <div class="language-badge">🐍 Python</div>
+            <div class="language-badge">🦀 Rust</div>
+            <div class="language-badge">🐹 Go</div>
+            <div class="language-badge">🤝 Collaborative</div>
+        </div>
+
+        <!-- Stats -->
+        <div class="card">
+            <h2>📊 Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalFiles">0</div>
+                    <div class="stat-label">Total Files</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalSize">0 MB</div>
+                    <div class="stat-label">Total Size</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="activeTasks">0</div>
+                    <div class="stat-label">Active Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="completedTasks">0</div>
+                    <div class="stat-label">Completed Tasks</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scrape Form -->
+        <div class="card">
+            <h2>🎯 Start Scraping</h2>
+            
+            <div class="form-group">
+                <label>URL to Scrape</label>
+                <input type="url" id="urlInput" placeholder="https://example.com" />
+            </div>
+
+            <div class="form-group">
+                <label>Select Language</label>
+                <div class="language-selector">
+                    <div class="language-option selected" data-language="python" onclick="selectLanguage('python')">
+                        <div class="emoji">🐍</div>
+                        <div class="name">Python</div>
+                        <div class="desc">Feature-rich</div>
+                    </div>
+                    <div class="language-option" data-language="rust" onclick="selectLanguage('rust')">
+                        <div class="emoji">🦀</div>
+                        <div class="name">Rust</div>
+                        <div class="desc">Maximum Speed</div>
+                    </div>
+                    <div class="language-option" data-language="go" onclick="selectLanguage('go')">
+                        <div class="emoji">🐹</div>
+                        <div class="name">Go</div>
+                        <div class="desc">Concurrent</div>
+                    </div>
+                    <div class="language-option" data-language="collaborative" onclick="selectLanguage('collaborative')">
+                        <div class="emoji">🤝</div>
+                        <div class="name">Collaborative</div>
+                        <div class="desc">All Together</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Options</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="ctfMode" />
+                        <label for="ctfMode">CTF Mode (No Rate Limit)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="filesOnly" />
+                        <label for="filesOnly">Files Only</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="fetchResources" checked />
+                        <label for="fetchResources">Fetch Resources</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Max Depth</label>
+                <input type="number" id="maxDepth" value="10" min="1" max="50" />
+            </div>
+
+            <div class="form-group">
+                <label>Max Pages</label>
+                <input type="number" id="maxPages" value="10000" min="1" max="100000" />
+            </div>
+
+            <button class="btn btn-primary" onclick="startScrape()">🚀 Start Scraping</button>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks -->
+        <div class="card">
+            <h2>📋 Tasks</h2>
+            <div id="taskList" class="task-list">
+                <p style="color: #666; text-align: center;">No tasks yet</p>
+            </div>
+        </div>
+
+        <!-- Files -->
+        <div class="card">
+            <h2>📁 Downloaded Files</h2>
+            <div style="margin-bottom: 15px;">
+                <button class="btn btn-success" onclick="downloadAll()">📥 Download All (ZIP)</button>
+                <button class="btn btn-danger" onclick="clearFiles()">🗑️ Clear All Files</button>
+            </div>
+            <div id="fileList" class="file-list">
+                <p style="color: #666; text-align: center;">No files downloaded yet</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedLanguage = 'python';
+        let currentTaskId = null;
+        let statsInterval = null;
+
+        function selectLanguage(language) {
+            selectedLanguage = language;
+            document.querySelectorAll('.language-option').forEach(opt => {
+                opt.classList.remove('selected');
+                if (opt.dataset.language === language) {
+                    opt.classList.add('selected');
+                }
+            });
+        }
+
+        async function startScrape() {
+            const url = document.getElementById('urlInput').value;
+            if (!url) {
+                alert('Please enter a URL');
+                return;
+            }
+
+            const options = {
+                ctf_mode: document.getElementById('ctfMode').checked,
+                files_only: document.getElementById('filesOnly').checked,
+                fetch_resources: document.getElementById('fetchResources').checked,
+                max_depth: parseInt(document.getElementById('maxDepth').value),
+                max_pages: parseInt(document.getElementById('maxPages').value)
+            };
+
+            const response = await fetch('/api/scrape', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    url: url,
+                    language: selectedLanguage,
+                    options: options
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.task_id) {
+                currentTaskId = data.task_id;
+                document.getElementById('progressContainer').style.display = 'block';
+                monitorTask(data.task_id);
+            }
+        }
+
+        async function monitorTask(taskId) {
+            const interval = setInterval(async () => {
+                const response = await fetch(`/api/tasks/${taskId}`);
+                const data = await response.json();
+
+                document.getElementById('progressFill').style.width = data.progress + '%';
+                document.getElementById('progressFill').textContent = data.progress + '%';
+
+                if (data.status === 'completed' || data.status === 'failed') {
+                    clearInterval(interval);
+                    document.getElementById('progressContainer').style.display = 'none';
+                    updateTasks();
+                    updateFiles();
+                    updateStats();
+                }
+            }, 1000);
+        }
+
+        async function updateTasks() {
+            const response = await fetch('/api/tasks');
+            const data = await response.json();
+
+            const taskList = document.getElementById('taskList');
+            
+            if (data.tasks.length === 0) {
+                taskList.innerHTML = '<p style="color: #666; text-align: center;">No tasks yet</p>';
+                return;
+            }
+
+            taskList.innerHTML = data.tasks.map(task => `
+                <div class="task-item">
+                    <div class="task-header">
+                        <div>
+                            <div class="task-url">${task.url}</div>
+                            <div class="task-language">${task.language}</div>
+                        </div>
+                        <span class="status-badge status-${task.status}">${task.status}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function updateFiles() {
+            const response = await fetch('/api/files');
+            const data = await response.json();
+
+            const fileList = document.getElementById('fileList');
+            
+            if (data.files.length === 0) {
+                fileList.innerHTML = '<p style="color: #666; text-align: center;">No files downloaded yet</p>';
+                return;
+            }
+
+            fileList.innerHTML = data.files.map(file => `
+                <div class="file-item">
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-size">${formatSize(file.size)}</div>
+                    <button class="btn btn-secondary" style="width: auto; padding: 5px 15px;" onclick="downloadFile('${file.name}')">Download</button>
+                </div>
+            `).join('');
+        }
+
+        async function updateStats() {
+            const response = await fetch('/api/stats');
+            const data = await response.json();
+
+            document.getElementById('totalFiles').textContent = data.total_files;
+            document.getElementById('totalSize').textContent = data.total_size_mb + ' MB';
+            document.getElementById('activeTasks').textContent = data.active_tasks;
+            document.getElementById('completedTasks').textContent = data.completed_tasks;
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        function downloadFile(filename) {
+            window.location.href = `/api/download/${filename}`;
+        }
+
+        function downloadAll() {
+            window.location.href = '/api/download-all';
+        }
+
+        async function clearFiles() {
+            if (confirm('Are you sure you want to clear all files?')) {
+                await fetch('/api/clear-files', { method: 'POST' });
+                updateFiles();
+                updateStats();
+            }
+        }
+
+        // Initialize
+        updateStats();
+        updateFiles();
+        updateTasks();
+
+        // Auto-refresh
+        setInterval(() => {
+            updateStats();
+            updateFiles();
+            updateTasks();
+        }, 5000);
+    </script>
+</body>
+</html>

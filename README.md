@@ -4,6 +4,16 @@ A production-ready, feature-rich web scraper with **Python**, **Rust**, and **Go
 
 ## 🚀 Quick Start
 
+### Docker Web GUI (Easiest)
+
+```bash
+# Run with Docker Compose
+docker-compose up -d
+
+# Open http://localhost:5000 in your browser
+# Beautiful web interface for scraping!
+```
+
 ### Unified CLI (Recommended)
 
 ```bash
@@ -62,6 +72,17 @@ See [UNIFIED.md](UNIFIED.md) for detailed multi-language documentation.
 
 ## Installation
 
+### Docker (Easiest - Web GUI)
+
+```bash
+# Run with Docker Compose
+docker-compose up -d
+
+# Open http://localhost:5000 in your browser
+```
+
+### Local Installation
+
 ```bash
 # Install Python dependencies
 pip install -r requirements.txt
@@ -93,12 +114,24 @@ scrapper/
 ├── proxy_manager.py          # Python proxy manager
 ├── output_handler.py        # Python output handler
 ├── turbo_scraper.py         # Python turbo scraper
+├── collaborative_scraper.py # Collaborative scraping
+├── message_bus.py           # Message bus pattern
+├── real_collaboration.py    # Real IPC
+├── team_scrape.py           # Team-based scraping
 ├── rust-scraper/            # Rust implementation
 │   ├── Cargo.toml
 │   └── src/main.rs
-└── go-scraper/              # Go implementation
-    ├── go.mod
-    └── main.go
+├── go-scraper/              # Go implementation
+│   ├── go.mod
+│   └── main.go
+├── web/                     # Web GUI
+│   ├── app.py              # Flask web app
+│   ├── requirements.txt    # Web dependencies
+│   └── templates/
+│       └── index.html      # Web interface
+├── Dockerfile              # Docker image
+├── docker-compose.yml      # Docker Compose
+└── Makefile                # Build system
 ```
 
 ## Quick Start
@@ -393,6 +426,22 @@ python cli.py --url-file urls.txt --output json csv sqlite --save-files
 python scraper.py --url https://api.example.com/endpoint --language python \
   --header "Authorization: Bearer token"
 ```
+
+### Web GUI (Docker)
+```bash
+# Start with Docker Compose
+docker-compose up -d
+
+# Open http://localhost:5000
+# Beautiful web interface for:
+# - Select language (Python, Rust, Go, Collaborative)
+# - Configure scraping options
+# - Monitor progress in real-time
+# - Download files directly
+# - View statistics
+```
+
+See [DOCKER.md](DOCKER.md) for full Docker documentation.
 
 ## Security Considerations
 

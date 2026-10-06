@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+venv/
+ENV/
+env/
+
+# Rust
+rust-scraper/target/
+Cargo.lock
+
+# Go
+go-scraper/turbo-scraper
+go-scraper/go.sum
+
+# Output directories
+data/
+output/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+*.md
+docs/
+
+# Proxy files (may contain credentials)
+proxies.txt
+urls.txt
