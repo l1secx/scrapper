@@ -202,6 +202,11 @@ Examples:
         action='store_true',
         help='Save scraped content to files'
     )
+    output_group.add_argument(
+        '--files-only',
+        action='store_true',
+        help='Only save files, no JSON/CSV/HTML/SQLite output'
+    )
     
     # Headers
     header_group = parser.add_argument_group('Headers')
@@ -276,6 +281,14 @@ async def main():
     if args.header:
         custom_headers = parse_headers(args.header)
     
+    # Handle files-only mode
+    if args.files_only:
+        output_formats = []
+        save_files = True
+    else:
+        output_formats = args.output
+        save_files = args.save_files
+    
     # Create config
     config = Config(
         max_requests=args.max_requests,
@@ -288,7 +301,7 @@ async def main():
         retry_delay=args.retry_delay,
         proxy_file=args.proxy_file,
         rotate_proxies=args.rotate_proxies,
-        output_formats=args.output,
+        output_formats=output_formats,
         custom_headers=custom_headers
     )
     
@@ -318,20 +331,21 @@ async def main():
                     max_depth=args.max_depth,
                     follow_patterns=args.follow_pattern,
                     exclude_patterns=args.exclude_pattern,
-                    max_pages=args.max_pages
+                    max_pages=args.max_pages,
+                    save_to_file=save_files
                 )
             elif urls:
                 # Fetch mode
                 if len(urls) == 1:
                     print(f"Fetching {urls[0]}")
-                    result = await scraper.fetch(urls[0], save_to_file=args.save_files)
+                    result = await scraper.fetch(urls[0], save_to_file=save_files)
                     results = [result] if result else []
                 else:
                     print(f"Fetching {len(urls)} URLs (concurrent: {args.concurrent})")
                     results = await scraper.fetch_multiple(
                         urls=urls,
                         concurrent=args.concurrent,
-                        save_to_file=args.save_files
+                        save_to_file=save_files
                     )
             else:
                 results = []

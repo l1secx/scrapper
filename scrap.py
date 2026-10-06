@@ -322,7 +322,8 @@ class WebScraper:
         max_depth: int = 1,
         follow_patterns: Optional[List[str]] = None,
         exclude_patterns: Optional[List[str]] = None,
-        max_pages: int = 100
+        max_pages: int = 100,
+        save_to_file: bool = False
     ) -> List[ScrapResult]:
         """
         Crawl website starting from start_url
@@ -333,6 +334,7 @@ class WebScraper:
             follow_patterns: URL patterns to follow (regex)
             exclude_patterns: URL patterns to exclude (regex)
             max_pages: Maximum pages to crawl
+            save_to_file: Whether to save responses to files
             
         Returns:
             List of ScrapResults
@@ -352,7 +354,7 @@ class WebScraper:
             if depth > max_depth:
                 continue
             
-            result = await self.fetch(url)
+            result = await self.fetch(url, save_to_file=save_to_file)
             if not result:
                 continue
             
