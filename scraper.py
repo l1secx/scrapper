@@ -20,9 +20,10 @@ def get_language_preference():
     print("2. Rust (Maximum performance, native compiled)")
     print("3. Go (Fast, concurrent, easy deployment)")
     print("4. Auto (Automatically choose based on availability)")
+    print("5. Collaborative (All 3 languages work together!) 🤝")
     print()
     
-    choice = input("Enter choice (1-4) [default: 4]: ").strip()
+    choice = input("Enter choice (1-5) [default: 4]: ").strip()
     
     if not choice:
         choice = "4"
@@ -157,6 +158,46 @@ def run_go_scraper(args):
     subprocess.run(cmd, check=True)
 
 
+def run_collaborative_scraper(args):
+    """Run collaborative scraper - all 3 languages work together"""
+    print("\n" + "="*70)
+    print("🤝 COLLABORATIVE MODE - All Languages Working Together")
+    print("="*70)
+    print("🐍 Python: Orchestration, Rate Limiting, Proxy Management")
+    print("🦀 Rust: High-Speed Crawling, Link Extraction")
+    print("🐹 Go: Concurrent I/O, File Downloads")
+    print("="*70 + "\n")
+    
+    # Import team_scrape
+    import team_scrape
+    
+    # Get URLs
+    urls = []
+    if args.url:
+        urls = [args.url]
+    elif args.url_file:
+        with open(args.url_file, 'r') as f:
+            urls = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+    elif args.crawl:
+        urls = [args.crawl]
+    
+    if not urls:
+        print("No URLs provided")
+        return
+    
+    # If only one URL, expand for collaboration demo
+    if len(urls) == 1:
+        urls = urls * 9
+        print(f"🔄 Expanding to {len(urls)} collaborative tasks\n")
+    
+    # Run team scrape
+    team = team_scrape.TeamScrape()
+    results = team.scan(urls)
+    
+    print(f"\n✅ Collaborative scan complete!")
+    print(f"Python, Rust, and Go processed {len(results)} tasks together")
+
+
 def print_stats(stats):
     """Print statistics"""
     print("\n" + "="*50)
@@ -246,7 +287,7 @@ Language Selection:
     parser.add_argument('--fetch-resources', action='store_true', default=True, help='Fetch resources')
     
     # Language selection
-    parser.add_argument('--language', '-l', choices=['python', 'rust', 'go', 'auto'], default='auto', help='Backend language')
+    parser.add_argument('--language', '-l', choices=['python', 'rust', 'go', 'auto', 'collaborative'], default='auto', help='Backend language')
     parser.add_argument('--no-prompt', action='store_true', help='Skip language selection prompt')
     
     # Other
@@ -272,7 +313,8 @@ def main():
             '1': 'python',
             '2': 'rust',
             '3': 'go',
-            '4': 'auto'
+            '4': 'auto',
+            '5': 'collaborative'
         }
         language = language_map.get(choice, 'auto')
     
@@ -289,6 +331,8 @@ def main():
         run_rust_scraper(args)
     elif language == 'go':
         run_go_scraper(args)
+    elif language == 'collaborative':
+        run_collaborative_scraper(args)
     else:
         print(f"Unknown language: {language}")
         sys.exit(1)

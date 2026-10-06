@@ -22,9 +22,68 @@ cd ..
 python scraper.py --crawl https://example.com
 
 # Or specify language explicitly
-python scraper.py --crawl https://example.com --language rust
-python scraper.py --crawl https://example.com --language go
-python scraper.py --crawl https://example.com --language python
+python scraper.py --crawl https://example.com --language python  # Feature-rich
+python scraper.py --crawl https://example.com --language rust    # Maximum speed
+python scraper.py --crawl https://example.com --language go      # Fast & concurrent
+
+# NEW: Collaborative Mode - All 3 languages work together! 🤝
+python scraper.py --crawl https://example.com --language collaborative
+```
+
+## 🤝 Collaborative Mode (NEW!)
+
+In collaborative mode, all three languages work together as a team:
+
+- **🐍 Python**: Orchestration, rate limiting, proxy management, coordination
+- **🦀 Rust**: High-speed crawling, link extraction, heavy computation
+- **🐹 Go**: Concurrent I/O, file downloads, network operations
+
+### How Collaboration Works
+
+1. **Python** acts as the conductor:
+   - Manages rate limiting (token bucket algorithm)
+   - Handles proxy rotation and health checking
+   - Coordinates work distribution
+   - Provides shared configuration
+
+2. **Rust** acts as the speed demon:
+   - Crawls websites at maximum speed
+   - Extracts links from HTML efficiently
+   - Performs heavy computations
+   - Uses multi-threading for parallel processing
+
+3. **Go** acts as the network specialist:
+   - Downloads files concurrently with goroutines
+   - Handles I/O operations efficiently
+   - Manages network connections
+   - Provides fast concurrent execution
+
+### Example: Collaborative Scan
+
+```bash
+# All 3 languages work together on one scan
+python scraper.py --crawl https://example.com --language collaborative
+
+# With URL list
+python scraper.py --url-file urls.txt --language collaborative
+```
+
+### Standalone Collaboration Scripts
+
+Several standalone scripts demonstrate different collaboration patterns:
+
+```bash
+# Simple collaborative scraping
+python collaborative_scraper.py https://example.com
+
+# Message bus pattern (languages communicate via messages)
+python message_bus.py full_scan
+
+# Real IPC between processes
+python real_collaboration.py demo
+
+# Team-based task distribution
+python team_scrape.py https://example.com
 ```
 
 ## 📊 Language Comparison
