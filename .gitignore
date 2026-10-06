@@ -25,6 +25,10 @@ venv/
 ENV/
 env/
 
+# Rust
+rust-scraper/target/
+Cargo.lock
+
 # IDE
 .vscode/
 .idea/
