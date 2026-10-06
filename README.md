@@ -1,6 +1,38 @@
-# Professional Web Scraper
+# Professional Web Scraper - Multi-Language
 
-A production-ready, feature-rich web scraper with advanced rate limiting, proxy support, and multiple output formats. Designed for both CTF competitions (unlimited mode) and professional penetration testing (controlled rate limiting).
+A production-ready, feature-rich web scraper with **Python**, **Rust**, and **Go** backends. Advanced rate limiting, proxy support, and multiple output formats. Designed for both CTF competitions (unlimited mode) and professional penetration testing (controlled rate limiting).
+
+## 🚀 Quick Start
+
+### Unified CLI (Recommended)
+
+```bash
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Build all scrapers (optional)
+make build
+
+# Run with auto-selected language
+python scraper.py --crawl https://example.com
+
+# Or specify language explicitly
+python scraper.py --crawl https://example.com --language python  # Feature-rich
+python scraper.py --crawl https://example.com --language rust    # Maximum speed
+python scraper.py --crawl https://example.com --language go      # Fast & concurrent
+```
+
+### Language Comparison
+
+| Feature | Python | Rust | Go |
+|---------|--------|------|-----|
+| **Speed** | Baseline | 10-100x faster | 5-50x faster |
+| **Features** | Most features | High performance | Fast & concurrent |
+| **Ease of Use** | Easiest | Requires build | Requires build |
+| **Rate Limiting** | ✅ Full support | ❌ CTF mode only | ❌ CTF mode only |
+| **Proxy** | ✅ Rotation | ✅ Basic | ❌ None |
+
+See [UNIFIED.md](UNIFIED.md) for detailed multi-language documentation.
 
 ## Features
 
@@ -31,13 +63,66 @@ A production-ready, feature-rich web scraper with advanced rate limiting, proxy 
 ## Installation
 
 ```bash
-# Install dependencies
+# Install Python dependencies
 pip install -r requirements.txt
+
+# Build Rust scraper (optional, for maximum performance)
+cd rust-scraper
+cargo build --release
+cd ..
+
+# Build Go scraper (optional)
+cd go-scraper
+go build -o turbo-scraper
+cd ..
+
+# Or build all at once
+make build
+```
+
+## Project Structure
+
+```
+scrapper/
+├── scraper.py              # Unified CLI (main entry point)
+├── cli.py                  # Python CLI (standalone)
+├── scrap.py                 # Python scraper core
+├── config.py                # Python configuration
+├── models.py                # Python data models
+├── rate_limiter.py          # Python rate limiter
+├── proxy_manager.py          # Python proxy manager
+├── output_handler.py        # Python output handler
+├── turbo_scraper.py         # Python turbo scraper
+├── rust-scraper/            # Rust implementation
+│   ├── Cargo.toml
+│   └── src/main.rs
+└── go-scraper/              # Go implementation
+    ├── go.mod
+    └── main.go
 ```
 
 ## Quick Start
 
-### Basic Usage
+### Unified CLI Usage
+
+```bash
+# Scrape a single URL (auto-selects language)
+python scraper.py --url https://example.com
+
+# Crawl website with Python backend
+python scraper.py --crawl https://example.com --language python --max-depth 2
+
+# Crawl with Rust backend (maximum speed)
+python scraper.py --crawl https://example.com --language rust --max-depth 3 --max-pages 100
+
+# Crawl with Go backend
+python scraper.py --crawl https://example.com --language go
+
+# CTF mode (unlimited, Python)
+python scraper.py --url https://ctf.example.com --language python --ctf-mode
+```
+
+### Standalone Python CLI
 
 ```bash
 # Scrape a single URL
@@ -56,10 +141,10 @@ python cli.py --url-file urls.txt
 ### Web Crawling
 
 ```bash
-# Crawl website with depth 2
-python cli.py --crawl https://example.com --max-depth 2
+# Crawl website with depth 2 (unified CLI)
+python scraper.py --crawl https://example.com --max-depth 2
 
-# Crawl with max pages limit
+# Crawl with max pages limit (Python standalone)
 python cli.py --crawl https://example.com --max-depth 3 --max-pages 100
 
 # Crawl with URL patterns
@@ -275,28 +360,38 @@ Uses token bucket algorithm:
 
 ## Use Cases
 
-### CTF Competitions
+### CTF Competitions (Maximum Speed)
 ```bash
-# Maximum speed, no rate limiting
+# Rust backend for maximum performance
+python scraper.py --crawl https://ctf.example.com --language rust \
+  --max-depth 15 --max-pages 50000 --max-connections 500 \
+  --no-verify-ssl --fetch-resources
+
+# Or Python with CTF mode
 python cli.py --crawl https://ctf.example.com --ctf-mode --max-depth 5 --max-pages 1000
 ```
 
-### Penetration Testing
+### Penetration Testing (Respectful)
 ```bash
-# Respectful scraping with rate limiting
-python cli.py --crawl https://target.com --max-requests 2 --time-window 1 --max-depth 3
+# Python with rate limiting
+python scraper.py --crawl https://target.com --language python \
+  --max-requests 2 --time-window 1 --max-depth 3
 ```
 
 ### Data Collection
 ```bash
-# Collect data with multiple formats
+# Go for fast concurrent fetching
+python scraper.py --url-file urls.txt --language go
+
+# Python with multiple formats
 python cli.py --url-file urls.txt --output json csv sqlite --save-files
 ```
 
 ### API Testing
 ```bash
-# Test API endpoints with custom headers
-python cli.py --url https://api.example.com/endpoint --header "Authorization: Bearer token"
+# Python with custom headers
+python scraper.py --url https://api.example.com/endpoint --language python \
+  --header "Authorization: Bearer token"
 ```
 
 ## Security Considerations

@@ -19,6 +19,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+*.pyc
 
 # Virtual environments
 venv/
@@ -28,6 +29,10 @@ env/
 # Rust
 rust-scraper/target/
 Cargo.lock
+
+# Go
+go-scraper/turbo-scraper
+go-scraper/go.sum
 
 # IDE
 .vscode/
