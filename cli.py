@@ -100,6 +100,18 @@ Examples:
         action='append',
         help='URL pattern to exclude (regex, can be used multiple times)'
     )
+    crawl_group.add_argument(
+        '--fetch-resources',
+        action='store_true',
+        default=True,
+        help='Fetch JS, CSS, images, fonts, etc. (default: True)'
+    )
+    crawl_group.add_argument(
+        '--no-fetch-resources',
+        action='store_false',
+        dest='fetch_resources',
+        help='Do not fetch resources (JS, CSS, images, etc.)'
+    )
     
     # Rate limiting
     rate_group = parser.add_argument_group('Rate Limiting')
@@ -332,7 +344,8 @@ async def main():
                     follow_patterns=args.follow_pattern,
                     exclude_patterns=args.exclude_pattern,
                     max_pages=args.max_pages,
-                    save_to_file=save_files
+                    save_to_file=save_files,
+                    fetch_resources=args.fetch_resources
                 )
             elif urls:
                 # Fetch mode

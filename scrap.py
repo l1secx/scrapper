@@ -248,19 +248,53 @@ class WebScraper:
         return None
 
     async def _save_to_file(self, result: ScrapResult, custom_path: Optional[str] = None):
-        """Save scraped content to file"""
+        """Save scraped content to file with organized directory structure"""
         if custom_path:
             file_path = Path(custom_path)
         else:
-            # Generate filename from URL
-            url_hash = hashlib.md5(result.url.encode()).hexdigest()[:16]
-            ext = self._get_extension(result.content_type)
-            file_path = self.data_dir / f"{url_hash}{ext}"
+            # Get site name and resource type
+            site_name = self._get_site_name(result.url)
+            resource_type = self._get_resource_type(result.url, result.content_type)
+            
+            # Create directory structure: data/site_name/resource_type/
+            site_dir = self.data_dir / site_name
+            type_dir = site_dir / resource_type
+            type_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Generate meaningful filename from URL path
+            parsed = urlparse(result.url)
+            path = parsed.path.strip('/')
+            
+            if path:
+                # Clean the path for filename
+                filename = path.replace('/', '_').replace('\\', '_')
+                # Remove query parameters
+                filename = filename.split('?')[0]
+                # Ensure it has extension
+                if not filename.endswith(self._get_extension(result.content_type)):
+                    filename += self._get_extension(result.content_type)
+            else:
+                # Use hash if no path
+                filename = hashlib.md5(result.url.encode()).hexdigest()[:16]
+                filename += self._get_extension(result.content_type)
+            
+            # Limit filename length
+            if len(filename) > 200:
+                filename = filename[:200]
+            
+            file_path = type_dir / filename
         
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        with open(file_path, 'w', encoding='utf-8') as f:
-            f.write(result.content)
+        # Handle binary content (images, fonts, etc.)
+        if result.content_type and 'image' in result.content_type or 'font' in result.content_type or 'octet-stream' in result.content_type:
+            # For binary content, we need to save as binary
+            # But result.content is string, so we encode it back
+            # This is a limitation - we should fetch as binary in the future
+            # For now, save as text
+            with open(file_path, 'w', encoding='utf-8', errors='ignore') as f:
+                f.write(result.content)
+        else:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(result.content)
         
         self.logger.info(f"Saved content to {file_path}")
 
@@ -276,6 +310,20 @@ class WebScraper:
             'image/jpeg': '.jpg',
             'image/png': '.png',
             'image/gif': '.gif',
+            'image/svg+xml': '.svg',
+            'image/webp': '.webp',
+            'image/x-icon': '.ico',
+            'text/css': '.css',
+            'application/javascript': '.js',
+            'text/javascript': '.js',
+            'application/x-javascript': '.js',
+            'font/woff': '.woff',
+            'font/woff2': '.woff2',
+            'font/ttf': '.ttf',
+            'font/otf': '.otf',
+            'application/font-woff': '.woff',
+            'application/font-woff2': '.woff2',
+            'application/octet-stream': '.bin',
         }
         
         for ct, ext in extensions.items():
@@ -323,7 +371,8 @@ class WebScraper:
         follow_patterns: Optional[List[str]] = None,
         exclude_patterns: Optional[List[str]] = None,
         max_pages: int = 100,
-        save_to_file: bool = False
+        save_to_file: bool = False,
+        fetch_resources: bool = True
     ) -> List[ScrapResult]:
         """
         Crawl website starting from start_url
@@ -335,6 +384,7 @@ class WebScraper:
             exclude_patterns: URL patterns to exclude (regex)
             max_pages: Maximum pages to crawl
             save_to_file: Whether to save responses to files
+            fetch_resources: Whether to fetch JS, CSS, images, etc.
             
         Returns:
             List of ScrapResults
@@ -344,6 +394,7 @@ class WebScraper:
         results = []
         to_visit = [(start_url, 0)]
         visited_count = 0
+        resources_to_fetch = []
         
         while to_visit and visited_count < max_pages:
             url, depth = to_visit.pop(0)
@@ -360,6 +411,16 @@ class WebScraper:
             
             results.append(result)
             visited_count += 1
+            
+            # Extract resources (JS, CSS, images, etc.) if enabled
+            if fetch_resources and 'text/html' in result.content_type:
+                resources = self._extract_resources(result.content, url)
+                
+                # Add all resources to fetch list
+                for resource_type, urls in resources.items():
+                    for resource_url in urls:
+                        if resource_url not in self.visited_urls:
+                            resources_to_fetch.append(resource_url)
             
             # Extract links if not at max depth
             if depth < max_depth:
@@ -379,6 +440,16 @@ class WebScraper:
                     if link not in self.visited_urls:
                         to_visit.append((link, depth + 1))
         
+        # Fetch all resources after crawling pages
+        if fetch_resources and resources_to_fetch:
+            self.logger.info(f"Fetching {len(resources_to_fetch)} resources...")
+            resource_results = await self.fetch_multiple(
+                urls=resources_to_fetch,
+                concurrent=True,
+                save_to_file=save_to_file
+            )
+            results.extend(resource_results)
+        
         return results
 
     def _extract_links(self, html: str, base_url: str) -> List[str]:
@@ -397,6 +468,101 @@ class WebScraper:
                 links.append(absolute_url)
         
         return links
+
+    def _extract_resources(self, html: str, base_url: str) -> Dict[str, List[str]]:
+        """Extract all resources (JS, CSS, images, etc.) from HTML"""
+        from bs4 import BeautifulSoup
+        
+        soup = BeautifulSoup(html, 'html.parser')
+        resources = {
+            'js': [],
+            'css': [],
+            'images': [],
+            'fonts': [],
+            'other': []
+        }
+        
+        # Extract scripts (JS)
+        for script in soup.find_all('script', src=True):
+            src = script['src']
+            absolute_url = urljoin(base_url, src)
+            if urlparse(absolute_url).netloc == urlparse(base_url).netloc:
+                resources['js'].append(absolute_url)
+        
+        # Extract stylesheets (CSS)
+        for link in soup.find_all('link', rel='stylesheet'):
+            href = link.get('href')
+            if href:
+                absolute_url = urljoin(base_url, href)
+                if urlparse(absolute_url).netloc == urlparse(base_url).netloc:
+                    resources['css'].append(absolute_url)
+        
+        # Extract images
+        for img in soup.find_all('img', src=True):
+            src = img['src']
+            absolute_url = urljoin(base_url, src)
+            if urlparse(absolute_url).netloc == urlparse(base_url).netloc:
+                resources['images'].append(absolute_url)
+        
+        # Extract fonts
+        for link in soup.find_all('link', rel=True):
+            rel = link['rel']
+            if isinstance(rel, list):
+                rel = ' '.join(rel)
+            if 'font' in rel.lower() or 'preload' in rel.lower():
+                href = link.get('href')
+                if href:
+                    absolute_url = urljoin(base_url, href)
+                    if urlparse(absolute_url).netloc == urlparse(base_url).netloc:
+                        resources['fonts'].append(absolute_url)
+        
+        return resources
+
+    def _get_site_name(self, url: str) -> str:
+        """Extract site name from URL"""
+        parsed = urlparse(url)
+        domain = parsed.netloc
+        # Remove www. and common TLDs for cleaner name
+        domain = domain.replace('www.', '')
+        # Replace dots with underscores
+        return domain.replace('.', '_')
+
+    def _get_resource_type(self, url: str, content_type: str = None) -> str:
+        """Determine resource type from URL or content type"""
+        if content_type:
+            if 'javascript' in content_type or 'js' in content_type:
+                return 'js'
+            elif 'css' in content_type:
+                return 'css'
+            elif 'image' in content_type:
+                return 'images'
+            elif 'font' in content_type:
+                return 'fonts'
+            elif 'html' in content_type:
+                return 'html'
+            elif 'php' in content_type:
+                return 'php'
+        
+        # Check URL extension
+        url_lower = url.lower()
+        if url_lower.endswith('.js'):
+            return 'js'
+        elif url_lower.endswith('.css'):
+            return 'css'
+        elif url_lower.endswith(('.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico')):
+            return 'images'
+        elif url_lower.endswith(('.woff', '.woff2', '.ttf', '.otf', '.eot')):
+            return 'fonts'
+        elif url_lower.endswith('.php'):
+            return 'php'
+        elif url_lower.endswith('.html') or url_lower.endswith('.htm'):
+            return 'html'
+        elif url_lower.endswith('.json'):
+            return 'json'
+        elif url_lower.endswith('.xml'):
+            return 'xml'
+        
+        return 'other'
 
     async def _finalize(self):
         """Finalize scraping - save outputs and stats"""
