@@ -1,0 +1,35 @@
+[package]
+name = "turbo-scraper"
+version = "0.1.0"
+edition = "2021"
+authors = ["l1sec"]
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+reqwest = { version = "0.11", features = ["json", "cookies", "gzip", "brotli", "deflate"] }
+scraper = "0.18"
+regex = "1.10"
+url = "2.5"
+anyhow = "1.0"
+thiserror = "1.0"
+clap = { version = "4.4", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+indicatif = "0.17"
+console = "0.15"
+futures = "0.3"
+tokio-stream = "0.1"
+dashmap = "5.5"
+lru = "0.12"
+bytes = "1.5"
+mime = "0.3"
+mime_guess = "2.0"
+path-clean = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender = "0.2"
+once_cell = "1.19"
+parking_lot = "0.12"
+crossbeam = "0.8"
+num_cpus = "1.16"
