@@ -8,7 +8,7 @@ use reqwest::Client;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Semaphore;
@@ -103,11 +103,23 @@ impl ResourceType {
             ResourceType::Js
         } else if ct_lower.contains("css") || url_lower.ends_with(".css") {
             ResourceType::Css
-        } else if ct_lower.contains("image") || url_lower.ends_with((".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".ico")) {
+        } else if ct_lower.contains("image") || 
+                 url_lower.ends_with(".png") || 
+                 url_lower.ends_with(".jpg") || 
+                 url_lower.ends_with(".jpeg") || 
+                 url_lower.ends_with(".gif") || 
+                 url_lower.ends_with(".svg") || 
+                 url_lower.ends_with(".webp") || 
+                 url_lower.ends_with(".ico") {
             ResourceType::Image
-        } else if ct_lower.contains("font") || url_lower.ends_with((".woff", ".woff2", ".ttf", ".otf", ".eot")) {
+        } else if ct_lower.contains("font") || 
+                 url_lower.ends_with(".woff") || 
+                 url_lower.ends_with(".woff2") || 
+                 url_lower.ends_with(".ttf") || 
+                 url_lower.ends_with(".otf") || 
+                 url_lower.ends_with(".eot") {
             ResourceType::Font
-        } else if ct_lower.contains("html") || url_lower.ends_with((".html", ".htm")) {
+        } else if ct_lower.contains("html") || url_lower.ends_with(".html") || url_lower.ends_with(".htm") {
             ResourceType::Html
         } else if ct_lower.contains("php") || url_lower.ends_with(".php") {
             ResourceType::Php
@@ -416,7 +428,7 @@ impl TurboScraper {
                         let file_path = self.get_file_path(&url, ResourceType::Html, "text/html")?;
                         if let Ok(html_content) = fs::read_to_string(&file_path) {
                             let extracted = self.extract_resources(&html_content, &url);
-                            for (res_url, res_type) in extracted {
+                            for (res_url, _res_type) in extracted {
                                 if !self.visited.contains_key(&res_url) {
                                     if depth < self.args.max_depth {
                                         to_visit.push((res_url.clone(), depth + 1));
@@ -435,8 +447,9 @@ impl TurboScraper {
             }
         }
 
+        let resources_count = resources_to_fetch.len();
         if !resources_to_fetch.is_empty() {
-            pb.set_length((resources_to_fetch.len() + visited_count) as u64);
+            pb.set_length((resources_count + visited_count) as u64);
             pb.set_message("Fetching resources...");
 
             let scraper = self.clone();
@@ -452,7 +465,7 @@ impl TurboScraper {
 
             let _ = futures::future::join_all(fetch_tasks).await;
             
-            for _ in 0..resources_to_fetch.len() {
+            for _ in 0..resources_count {
                 pb.inc(1);
             }
         }
@@ -528,7 +541,7 @@ impl TurboScraper {
         println!("{}: {}", cyan.apply_to("Total requests"), stats.total_requests);
         println!("{}: {}", cyan.apply_to("Successful"), green.apply_to(stats.successful));
         println!("{}: {}", cyan.apply_to("Failed"), yellow.apply_to(stats.failed));
-        println!("{}: {}", cyan.apply_to("Bytes downloaded"), format!("{:,}", stats.bytes_downloaded));
+        println!("{}: {}", cyan.apply_to("Bytes downloaded"), stats.bytes_downloaded);
         
         if let (Some(start), Some(end)) = (stats.start_time, stats.end_time) {
             let duration = end.signed_duration_since(start);
