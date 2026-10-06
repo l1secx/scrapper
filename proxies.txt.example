@@ -1,0 +1,11 @@
+# Example proxy file
+# Format: protocol://user:password@host:port
+# Lines starting with # are comments
+
+# HTTP proxies
+http://proxy1.example.com:8080
+http://user:pass@proxy2.example.com:8080
+
+# SOCKS5 proxies
+socks5://proxy3.example.com:1080
+socks5://user:pass@proxy4.example.com:1080

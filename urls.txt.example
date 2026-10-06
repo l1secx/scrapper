@@ -1,0 +1,7 @@
+# Example URLs file
+# Lines starting with # are comments
+
+https://example.com
+https://example.com/page1
+https://example.com/page2
+https://example.com/api/endpoint
